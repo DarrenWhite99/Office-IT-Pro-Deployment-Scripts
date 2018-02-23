@@ -22,7 +22,11 @@ using System;
           Current = 1,
           FirstReleaseBusiness = 2,
           Business = 3,
-          CMValidation = 4
+          CMValidation = 4,
+          MonthlyTargeted=5,
+          Monthly=6,
+          SemiAnnualTargeted=7,
+          SemiAnnual=8
        }
 "
 Add-Type -TypeDefinition $enumDef -ErrorAction SilentlyContinue
@@ -37,7 +41,11 @@ using System;
           FirstReleaseCurrent = 0,
           Current = 1,
           FirstReleaseDeferred = 2,
-          Deferred = 3
+          Deferred = 3,
+          MonthlyTargeted=4,
+          Monthly=5,
+          SemiAnnualTargeted=6,
+          SemiAnnual=7
        }
 "
 Add-Type -TypeDefinition $enumDef -ErrorAction SilentlyContinue
@@ -107,7 +115,7 @@ https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
 
 Param(
     [Parameter()]
-    [OfficeChannel[]] $Channels = (0, 1, 2, 3),
+    [OfficeChannel[]] $Channels = (0, 1, 2, 3, 4, 5, 6, 7),
 
     [Parameter()]
     [string] $Version,
@@ -262,6 +270,29 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
             #loop for each branch
             $BranchesOrChannels | %{
                 $currentBranch = $_
+
+                switch($currentBranch){
+                    "MonthlyTargeted"{
+                        $selectedBranchName = $currentBranch
+                        $currentBranch = "Insiders"
+                    }
+                    "Monthly"{
+                        $selectedBranchName = $currentBranch
+                        $currentBranch = "Monthly"
+                    }
+                    "SemiAnnualTargeted"{
+                        $selectedBranchName = $currentBranch
+                        $currentBranch = "Targeted"
+                    }
+                    "SemiAnnual"{
+                        $selectedBranchName = $currentBranch
+                        $currentBranch = "Broad"
+                    } Default {
+                        $selectedBranchName = $currentBranch
+                    }
+                    
+                }
+
                 $b++
 
                 $Version = $UserSpecifiedVersion
@@ -270,9 +301,9 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
                 $Throttle = ""
                 $VersionFile = ""
 
-                Write-Progress -id 1 -Activity "Downloading Channel" -status "Channel: $($currentBranch.ToString()) : $currentBitness" -percentComplete ($b / $BranchCount *100) 
+                Write-Progress -id 1 -Activity "Downloading Channel" -status "Channel: $selectedBranchName : $currentBitness" -percentComplete ($b / $BranchCount *100) 
 
-                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Downloading Channel: $currentBranch" -LogFilePath $LogFilePath
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Downloading Channel: $selectedBranchName" -LogFilePath $LogFilePath
 
                 $FolderName = $($_.ToString())
 
@@ -280,7 +311,7 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
                    $FolderName = ConvertChannelNameToShortName -ChannelName $FolderName  
                 }
        
-                $baseURL = $CurrentVersionXML.UpdateFiles.baseURL | ? branch -eq $_.ToString() | %{$_.URL};
+                $baseURL = $CurrentVersionXML.UpdateFiles.baseURL | ? branch -eq $currentBranch | %{$_.URL};
                 if(!(Test-Path "$TargetDirectory\$FolderName\")){
                     New-Item -Path "$TargetDirectory\$FolderName\" -ItemType directory -Force | Out-Null
                 }
@@ -303,7 +334,7 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
                         }
                     }
                     $NewestVersion = $versionReturn.NewestVersion
-                    $PreviousVersion = $versionReturn.PreviousVesion
+                    $PreviousVersion = $versionReturn.PreviousVersion
                     $Throttle = $versionReturn.Throttle
                 }          
 
@@ -343,11 +374,11 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
                 }
                 
                 if (([int]$Throttle -lt 1000) -and (!$DownloadThrottledVersions) -and (![String]::IsNullOrWhiteSpace($Throttle))) {
-                   Write-Host "`tDownloading Channel: $currentBranch - Version: $currentVersion (Using previous version instead of Throttled Version: $NewestVersion - Throttle: $Throttle)"
-                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Downloading Channel: $currentBranch - Version: $currentVersion (Using previous version instead of Throttled Version: $NewestVersion - Throttle: $Throttle)" -LogFilePath $LogFilePath
+                   Write-Host "`tDownloading Channel: $selectedBranchName - Version: $currentVersion (Using previous version instead of Throttled Version: $NewestVersion - Throttle: $Throttle)"
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Downloading Channel: $selectedBranchName - Version: $currentVersion (Using previous version instead of Throttled Version: $NewestVersion - Throttle: $Throttle)" -LogFilePath $LogFilePath
                 } else {
-                   Write-Host "`tDownloading Channel: $currentBranch - Version: $currentVersion"
-                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Downloading Channel: $currentBranch - Version: $currentVersion" -LogFilePath $LogFilePath
+                   Write-Host "`tDownloading Channel: $selectedBranchName - Version: $currentVersion"
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Downloading Channel: $selectedBranchName - Version: $currentVersion" -LogFilePath $LogFilePath
                 }
 
                 if(!(Test-Path "$TargetDirectory\$FolderName\Office\Data\$currentVersion")){
@@ -440,9 +471,9 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
                     $j = $j + 1
 
                     if (([int]$Throttle -lt 1000) -and (!$DownloadThrottledVersions) -and (![string]::IsNullOrWhiteSpace($Throttle))) {
-                       Write-Progress -id 2 -ParentId 1 -Activity "Downloading Channel Files" -status "Channel: $($currentBranch.ToString()) - Version: $currentVersion (Using previous version instead of Throttled Version: $NewestVersion - Throttle: $Throttle)" -percentComplete ($j / $numberOfFiles *100)
+                       Write-Progress -id 2 -ParentId 1 -Activity "Downloading Channel Files" -status "Channel: $selectedBranchName - Version: $currentVersion (Using previous version instead of Throttled Version: $NewestVersion - Throttle: $Throttle)" -percentComplete ($j / $numberOfFiles *100)
                     } else {
-                       Write-Progress -id 2 -ParentId 1 -Activity "Downloading Channel Files" -status "Channel: $($currentBranch.ToString()) - Version: $currentVersion" -percentComplete ($j / $numberOfFiles *100)
+                       Write-Progress -id 2 -ParentId 1 -Activity "Downloading Channel Files" -status "Channel: $selectedBranchName - Version: $currentVersion" -percentComplete ($j / $numberOfFiles *100)
                     }
                 }
 
@@ -510,7 +541,7 @@ For($i=1; $i -le $NumOfRetries; $i++){#loops through download process in the eve
                         }
 
                         $j = $j + 1
-                        Write-Progress -id 2 -ParentId 1 -Activity "Downloading Channel Files" -status "Channel: $($currentBranch.ToString())" -percentComplete ($j / $numberOfFiles *100)
+                        Write-Progress -id 2 -ParentId 1 -Activity "Downloading Channel Files" -status "Channel: $selectedBranchName" -percentComplete ($j / $numberOfFiles *100)
                     }
                 }
 
@@ -566,7 +597,7 @@ https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
 
 Param(
     [Parameter()]
-    [OfficeChannel[]] $Channels = (0, 1, 2, 3)
+    [OfficeChannel[]] $Channels = (0, 1, 2, 3, 4, 5, 6, 7)
 )
 
 begin {
@@ -745,7 +776,7 @@ function GetVersionBasedOnThrottle {
 
         $versionToReturn
         $checkChannel = $Channel
-        if($checkChannel -like "FirstReleaseCurrent"){$checkChannel = "InsidersSlow"}
+        if($checkChannel -like "FirstReleaseCurrent"){$checkChannel = "InsiderSlow"}
 
         $historyOfVersionsLink = "http://officecdn.microsoft.com/pr/wsus/releasehistory.cab"
 
@@ -762,7 +793,7 @@ function GetVersionBasedOnThrottle {
         $APIUpdates = GetAPIVersions
         $APupdates = $APIUpdates | Where {$_.Name -like $checkChannel}#pulled from API
 
-        $updates = $UpdateChannels | Where {$_.Name -like $checkChannel}#pulled from release history
+        $updates = $UpdateChannels | Where {$_.Name -like $checkChannel -or $_.ID -like $checkChannel}#pulled from release history
 
         #foreach($update in $updates.Update){
         #
@@ -948,6 +979,24 @@ function ConvertChannelNameToShortName {
        if ($ChannelName.ToLower() -eq "FirstReleaseBusiness".ToLower()) {
          return "FRDC"
        }
+       if ($ChannelName.ToLower() -eq "MonthlyTargeted".ToLower()) {
+         return "MTC"
+       }
+       if ($ChannelName.ToLower() -eq "Monthly".ToLower()) {
+         return "MC"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnualTargeted".ToLower()) {
+         return "SATC"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnual".ToLower()) {
+         return "SAC"
+       }
+       if ($ChannelName.ToLower() -eq "Broad".ToLower()) {
+         return "SAC"
+       }
+       if ($ChannelName.ToLower() -eq "Insiders".ToLower()) {
+         return "MTC"
+       }
     }
 }
 
@@ -975,6 +1024,18 @@ function ConvertChannelNameToBranchName {
        if ($ChannelName.ToLower() -eq "FirstReleaseBusiness".ToLower()) {
          return "FirstReleaseBusiness"
        }
+       if ($ChannelName.ToLower() -eq "MonthlyTargeted".ToLower()) {
+         return "MonthlyTargeted"
+       }
+       if ($ChannelName.ToLower() -eq "Monthly".ToLower()) {
+         return "Monthly"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnualTargeted".ToLower()) {
+         return "SemiAnnualTargeted"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnual".ToLower()) {
+         return "SemiAnnual"
+       }
     }
 }
 
@@ -1001,6 +1062,18 @@ function ConvertBranchNameToChannelName {
        }
        if ($BranchName.ToLower() -eq "FirstReleaseBusiness".ToLower()) {
          return "FirstReleaseDeferred"
+       }
+       if ($BranchName.ToLower() -eq "MonthlyTargeted".ToLower()) {
+         return "MonthlyTargeted"
+       }
+       if ($BranchName.ToLower() -eq "Monthly".ToLower()) {
+         return "Monthly"
+       }
+       if ($BranchName.ToLower() -eq "SemiAnnualTargeted".ToLower()) {
+         return "SemiAnnualTargeted"
+       }
+       if ($BranchName.ToLower() -eq "SemiAnnual".ToLower()) {
+         return "SemiAnnual"
        }
     }
 }

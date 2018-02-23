@@ -22,7 +22,11 @@ using System;
           Current = 1,
           FirstReleaseBusiness = 2,
           Business = 3,
-          CMValidation = 4
+          CMValidation = 4,
+          MonthlyTargeted = 5,
+          Monthly = 6,
+          SemiAnnualTargeted = 7,
+          SemiAnnual = 8
        }
 "
 Add-Type -TypeDefinition $enumDef -ErrorAction SilentlyContinue
@@ -37,7 +41,11 @@ using System;
           FirstReleaseCurrent = 0,
           Current = 1,
           FirstReleaseDeferred = 2,
-          Deferred = 3
+          Deferred = 3,
+          MonthlyTargeted = 4,
+          Monthly = 5,
+          SemiAnnualTargeted = 6,
+          SemiAnnual = 7
        }
 "
 Add-Type -TypeDefinition $enumDef -ErrorAction SilentlyContinue
@@ -99,7 +107,7 @@ Download-GPOOfficeChannelFiles -OfficeFilesPath D:\OfficeChannelFiles -Bitness v
     Param
     (
         [Parameter()]
-        [OfficeChannel[]] $Channels = @(1,2,3),
+        [OfficeChannel[]] $Channels = @(0,1,2,3,4,5,6,7),
 
         [Parameter(Mandatory=$true)]
 	    [String]$OfficeFilesPath = $NULL,
@@ -185,7 +193,7 @@ Configure-GPOOfficeDeployment -Channels Current,Deferred,FirstReleaseDeferred -O
     Param
     (      
         [Parameter()]
-        [OfficeChannel[]]$Channels = @(1,2,3),
+        [OfficeChannel[]]$Channels = @(0,1,2,3,4,5,6,7),
 
         [Parameter()]
         [Bitness]$Bitness = "v32",
@@ -218,7 +226,7 @@ Configure-GPOOfficeDeployment -Channels Current,Deferred,FirstReleaseDeferred -O
                 Copy-Item -Path $cabFilePath -Destination "$PSScriptRoot\ofl.cab" -Force
             }
 
-            $ChannelList = @("FirstReleaseCurrent","Current","Deferred","FirstReleaseDeferred")
+            $ChannelList = @("FirstReleaseCurrent","Current","Deferred","FirstReleaseDeferred","MonthlyTargeted","Monthly","SemiAnnualTargeted","SemiAnnual")
             $ChannelXml = Get-ChannelXml -FolderPath $OfficeFilesPath -OverWrite $false
             
             foreach($Channel in $ChannelList){
@@ -723,7 +731,7 @@ Update-GPOSourceFiles -OfficeFilesPath D:\OfficeChannelFiles -Channels Deferred,
 	    [string]$OfficeFilesPath,
 
         [Parameter()]
-        [OfficeChannel[]] $Channels = @(1,2,3),
+        [OfficeChannel[]] $Channels = @(0,1,2,3,4,5,6,7),
 
         [Parameter()]
 	    [bool]$MoveSourceFiles = $false
@@ -846,6 +854,18 @@ function ConvertChannelNameToShortName {
        if ($ChannelName.ToLower() -eq "FirstReleaseBusiness".ToLower()) {
          return "FRDC"
        }
+       if ($ChannelName.ToLower() -eq "MonthlyTargeted".ToLower()) {
+         return "MTC"
+       }
+       if ($ChannelName.ToLower() -eq "Monthly".ToLower()) {
+         return "MC"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnualTargeted".ToLower()) {
+         return "SATC"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnual".ToLower()) {
+         return "SAC"
+       }
     }
 }
 
@@ -873,6 +893,18 @@ function ConvertChannelNameToBranchName {
        if ($ChannelName.ToLower() -eq "FirstReleaseBusiness".ToLower()) {
          return "FirstReleaseBusiness"
        }
+       if ($ChannelName.ToLower() -eq "MonthlyTargeted".ToLower()) {
+         return "MonthlyTargeted"
+       }
+       if ($ChannelName.ToLower() -eq "Monthly".ToLower()) {
+         return "Monthly"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnualTargeted".ToLower()) {
+         return "SemiAnnualTargeted"
+       }
+       if ($ChannelName.ToLower() -eq "SemiAnnual".ToLower()) {
+         return "SemiAnnual"
+       }
     }
 }
 
@@ -899,6 +931,18 @@ function ConvertBranchNameToChannelName {
        }
        if ($BranchName.ToLower() -eq "FirstReleaseBusiness".ToLower()) {
          return "FirstReleaseDeferred"
+       }
+       if ($BranchName.ToLower() -eq "MonthlyTargeted".ToLower()) {
+         return "MonthlyTargeted"
+       }
+       if ($BranchName.ToLower() -eq "Monthly".ToLower()) {
+         return "Monthly"
+       }
+       if ($BranchName.ToLower() -eq "SemiAnnualTargeted".ToLower()) {
+         return "SemiAnnualTargeted"
+       }
+       if ($BranchName.ToLower() -eq "SemiAnnual".ToLower()) {
+         return "SemiAnnual"
        }
     }
 }

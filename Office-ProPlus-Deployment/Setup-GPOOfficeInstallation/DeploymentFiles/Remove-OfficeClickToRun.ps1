@@ -1,42 +1,65 @@
+[CmdletBinding(SupportsShouldProcess=$true)]
+param(
+    [Parameter()]
+    [string[]]$ComputerName = $env:COMPUTERNAME,
+    
+    [Parameter()]
+    [string]$RemoveCTRXmlPath = "$env:PUBLIC\Documents\RemoveCTRConfig.xml",
+    
+    [Parameter()]
+    [bool] $WaitForInstallToFinish = $true,
+    
+    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [string] $TargetFilePath = $NULL,
+    
+    [Parameter()]
+    [ValidateSet("All","O365ProPlusRetail","O365BusinessRetail","VisioProRetail","ProjectProRetail", "SPDRetail", "VisioProXVolume", "VisioStdXVolume", 
+                 "ProjectProXVolume", "ProjectStdXVolume", "InfoPathRetail", "SkypeforBusinessEntryRetail", "LyncEntryRetail", "AccessRuntimeRetail")]
+    [string[]]$C2RProductsToRemove = "All",
+    
+    [Parameter()]
+    [string]$LogFilePath
+)
+
 Function Remove-OfficeClickToRun {
 <#
 .Synopsis
-Removes the Click to Run version of Office installed.
+    Removes the Click to Run version of Office installed.
 
 .DESCRIPTION
-If Office Click-to-Run is installed the administrator will be prompted to confirm
-uninstallation. A configuration file will be generated and used to remove all Office CTR 
-products.
+    If Office Click-to-Run is installed the administrator will be prompted to confirm
+    uninstallation. A configuration file will be generated and used to remove all Office CTR 
+    products.
 
 .PARAMETER ComputerName
-The computer or list of computers from which to query 
+    The computer or list of computers from which to query 
 
 .EXAMPLE
-Remove-OfficeClickToRun
+    Remove-OfficeClickToRun
 
 Description:
-Will uninstall Office Click-to-Run.
+    Will uninstall Office Click-to-Run.
 #>
-    [CmdletBinding()]
-    Param(
-        [string[]] $ComputerName = $env:COMPUTERNAME,
+[CmdletBinding()]
+Param(
+    [string[]] $ComputerName = $env:COMPUTERNAME,
 
-        [string] $RemoveCTRXmlPath = "$env:PUBLIC\Documents\RemoveCTRConfig.xml",
+    [string] $RemoveCTRXmlPath = "$env:PUBLIC\Documents\RemoveCTRConfig.xml",
 
-        [Parameter()]
-        [bool] $WaitForInstallToFinish = $true,
+    [Parameter()]
+    [bool] $WaitForInstallToFinish = $true,
 
-        [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string] $TargetFilePath = $NULL,
+    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [string] $TargetFilePath = $NULL,
 
-        [Parameter()]
-        [ValidateSet("All","O365ProPlusRetail","O365BusinessRetail","VisioProRetail","ProjectProRetail", "SPDRetail", "VisioProXVolume", "VisioStdXVolume", 
-                     "ProjectProXVolume", "ProjectStdXVolume", "InfoPathRetail", "SkypeforBusinessEntryRetail", "LyncEntryRetail")]
-        [string[]]$C2RProductsToRemove = "All",
+    [Parameter()]
+    [ValidateSet("All","O365ProPlusRetail","O365BusinessRetail","VisioProRetail","ProjectProRetail", "SPDRetail", "VisioProXVolume", "VisioStdXVolume", 
+                 "ProjectProXVolume", "ProjectStdXVolume", "InfoPathRetail", "SkypeforBusinessEntryRetail", "LyncEntryRetail", "AccessRuntimeRetail")]
+    [string[]]$C2RProductsToRemove = "All",
 
-        [Parameter()]
-        [string]$LogFilePath
-    )
+    [Parameter()]
+    [string]$LogFilePath
+)
 
      Process{
         $currentFileName = Get-CurrentFileName
@@ -151,32 +174,40 @@ Will uninstall Office Click-to-Run.
 Function Get-OfficeVersion {
 <#
 .Synopsis
-Gets the Office Version installed on the computer
+    Gets the Office Version installed on the computer
+
 .DESCRIPTION
-This function will query the local or a remote computer and return the information about Office Products installed on the computer
+    This function will query the local or a remote computer and return the information about Office Products installed on the computer
+
 .NOTES   
-Name: Get-OfficeVersion
-Version: 1.0.5
-DateCreated: 2015-07-01
-DateUpdated: 2016-10-14
+    Name: Get-OfficeVersion
+    Version: 1.0.5
+    DateCreated: 2015-07-01
+    DateUpdated: 2016-10-14
+
 .LINK
-https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
+    https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
+
 .PARAMETER ComputerName
-The computer or list of computers from which to query 
+    The computer or list of computers from which to query 
+
 .PARAMETER ShowAllInstalledProducts
-Will expand the output to include all installed Office products
+    Will expand the output to include all installed Office products
+
 .EXAMPLE
-Get-OfficeVersion
-Description:
-Will return the locally installed Office product
+    Get-OfficeVersion
+    
+    Will return the locally installed Office product
+
 .EXAMPLE
-Get-OfficeVersion -ComputerName client01,client02
-Description:
-Will return the installed Office product on the remote computers
+    Get-OfficeVersion -ComputerName client01,client02
+    
+    Will return the installed Office product on the remote computers
+
 .EXAMPLE
-Get-OfficeVersion | select *
-Description:
-Will return the locally installed Office product with all of the available properties
+    Get-OfficeVersion | select *
+    
+    Will return the locally installed Office product with all of the available properties
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
@@ -330,8 +361,6 @@ process {
        }
     }
 
-    
-
     foreach ($regKey in $installKeys) {
         $keyList = new-object System.Collections.ArrayList
         $keys = $regProv.EnumKey($HKLM, $regKey)
@@ -453,7 +482,6 @@ process {
 
         }
     }
-
   }
 
   $results = Get-Unique -InputObject $results 
@@ -475,6 +503,190 @@ Function newCTRRemoveXml {
 "@
 }
 
+function Get-ODTOfficeProductLanguages {
+    Param(
+        [Parameter()]
+        [string]$ComputerName = $env:COMPUTERNAME,
+
+        [Parameter()]
+        [string]$ProductId
+    )
+
+    Begin {
+        $defaultDisplaySet = 'DisplayName','Languages'
+        $defaultDisplayPropertySet = New-Object System.Management.Automation.PSPropertySet(‘DefaultDisplayPropertySet’,[string[]]$defaultDisplaySet)
+        $PSStandardMembers = [System.Management.Automation.PSMemberInfo[]]@($defaultDisplayPropertySet)
+        $results = New-Object PSObject[] 0
+    }
+
+    Process {
+        $regProv = Get-Wmiobject -list "StdRegProv" -namespace root\default -ComputerName $ComputerName -ErrorAction Stop
+        $officeConfig = getCTRConfig -regProv $regProv
+        [System.XML.XMLDocument]$ConfigFile = New-Object System.XML.XMLDocument
+
+        if(!$ProductId){
+            $productReleaseIds = $officeConfig.ProductReleaseIds
+            $splitProducts = $productReleaseIds.Split(',')
+        } else {
+            $splitProducts = $ProductId
+        }
+
+        foreach($product in $splitProducts){
+            $officeAddLangs = odtGetOfficeLanguages -ConfigDoc $ConfigFile -OfficeKeyPath $officeConfig.OfficeKeyPath -ProductId $product
+
+            $object = New-Object PSObject -Property @{DisplayName = $product; Languages = $officeAddLangs}
+            $object | Add-Member MemberSet PSStandardMembers $PSStandardMembers
+            $results += $object
+        }
+  
+        return $results
+    }
+}
+
+function getCTRConfig() {
+    param(
+       [Parameter(ValueFromPipelineByPropertyName=$true)]
+       $regProv = $NULL
+    )
+
+    $HKLM = [UInt32] "0x80000002"
+    $computerName = $env:COMPUTERNAME
+
+    if (!($regProv)) {
+        $regProv = Get-Wmiobject -list "StdRegProv" -namespace root\default -computername $computerName -ErrorAction Stop
+    }
+    
+    $officeCTRKeys = 'SOFTWARE\Microsoft\Office\15.0\ClickToRun',
+                     'SOFTWARE\Wow6432Node\Microsoft\Office\15.0\ClickToRun',
+                     'SOFTWARE\Microsoft\Office\ClickToRun',
+                     'SOFTWARE\Wow6432Node\Microsoft\Office\ClickToRun'
+
+    $Object = New-Object PSObject
+    $Object | Add-Member Noteproperty ClickToRunInstalled $false
+
+    [string]$officeKeyPath = "";
+    foreach ($regPath in $officeCTRKeys) {
+       [string]$installPath = $regProv.GetStringValue($HKLM, $regPath, "InstallPath").sValue
+       if ($installPath) {
+          if ($installPath.Length -gt 0) {
+              $officeKeyPath = $regPath;
+              break;
+          }
+       }
+    }
+
+    if ($officeKeyPath.Length -gt 0) {
+        $Object.ClickToRunInstalled = $true
+
+        $configurationPath = join-path $officeKeyPath "Configuration"
+
+        [string]$platform = $regProv.GetStringValue($HKLM, $configurationPath, "Platform").sValue
+        [string]$clientCulture = $regProv.GetStringValue($HKLM, $configurationPath, "ClientCulture").sValue
+        [string]$productIds = $regProv.GetStringValue($HKLM, $configurationPath, "ProductReleaseIds").sValue
+        [string]$versionToReport = $regProv.GetStringValue($HKLM, $configurationPath, "VersionToReport").sValue
+        [string]$updatesEnabled = $regProv.GetStringValue($HKLM, $configurationPath, "UpdatesEnabled").sValue
+        [string]$updateUrl = $regProv.GetStringValue($HKLM, $configurationPath, "UpdateUrl").sValue
+        [string]$updateDeadline = $regProv.GetStringValue($HKLM, $configurationPath, "UpdateDeadline").sValue
+
+        if (!($productIds)) {
+            $productIds = ""
+            $officeActivePath = Join-Path $officeKeyPath "ProductReleaseIDs\Active"
+            $officeProducts = $regProv.EnumKey($HKLM, $officeActivePath)
+
+            foreach ($productName in $officeProducts.sNames) {
+               if ($productName.ToLower() -eq "stream") { continue }
+               if ($productName.ToLower() -eq "culture") { continue }
+               if ($productIds.Length -gt 0) { $productIds += "," }
+               $productIds += "$productName"
+            }
+        }
+
+        $splitProducts = $productIds.Split(',');
+
+        if ($platform.ToLower() -eq "x86") {
+            $platform = "32"
+        } else {
+            $platform = "64"
+        }
+
+        $Object | add-member Noteproperty Platform $platform
+        $Object | add-member Noteproperty ClientCulture $clientCulture
+        $Object | add-member Noteproperty ProductReleaseIds $productIds
+        $Object | add-member Noteproperty Version $versionToReport
+        $Object | add-member Noteproperty UpdatesEnabled $updatesEnabled
+        $Object | add-member Noteproperty UpdateUrl $updateUrl
+        $Object | add-member Noteproperty UpdateDeadline $updateDeadline
+        $Object | add-member Noteproperty OfficeKeyPath $officeKeyPath
+        
+    } 
+
+    return $Object 
+
+}
+
+function odtGetOfficeLanguages() {
+    param(
+       [Parameter(ValueFromPipelineByPropertyName=$true)]
+       [System.XML.XMLDocument]$ConfigDoc = $NULL,
+              
+       [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true)]
+       [string]$OfficeKeyPath = $NULL,
+
+       [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true)]
+       [string]$ProductId = $NULL
+    )
+
+    begin {
+        $HKLM = [UInt32] "0x80000002"
+        $HKCR = [UInt32] "0x80000000"
+    }
+
+    process {
+        [System.Collections.ArrayList]$appLanguages1 = New-Object System.Collections.ArrayList
+
+        #SOFTWARE\Wow6432Node\Microsoft\Office\14.0\Common\LanguageResources\InstalledUIs
+
+        $productsPath = join-path $officeKeyPath "ProductReleaseIDs\Active\$ProductId"
+        $installedCultures = $regProv.EnumKey($HKLM, $productsPath)
+        
+        foreach ($installedCulture in $installedCultures.sNames) {
+        if($installedCulture){
+            if ($installedCulture.Contains("-") -and !($installedCulture.ToLower() -eq "x-none")) {
+                $addItem = $appLanguages1.Add($installedCulture) 
+            }
+            }
+        }
+
+        if ($appLanguages1.Count) {
+            $productsPath = join-path $officeKeyPath "ProductReleaseIDs\Active\$ProductId"
+        } else {
+            $productReleasePath = Join-Path $officeKeyPath "ProductReleaseIDs"
+            $guids= $regProv.EnumKey($HKLM, $productReleasePath)
+
+            foreach ($guid in $guids.sNames) {
+
+                $productsPath = Join-Path $officeKeyPath "ProductReleaseIDs\$guid\$ProductId.16"
+                $installedCultures = $regProv.EnumKey($HKLM, $productsPath)
+      
+                foreach ($installedCulture in $installedCultures.sNames) {
+                   if($installedCulture){
+                      if ($installedCulture.Contains("-") -and !($installedCulture.ToLower() -eq "x-none")) {
+                            $addItem = $appLanguages1.Add($installedCulture) 
+                      }
+                   }
+                }
+
+                if ($appLanguages1.Count) {
+                   $productsPath = Join-Path $officeKeyPath "ProductReleaseIDs\Culture\$ProductId"
+                }
+ 
+            }
+        }
+
+        return $appLanguages1;
+    }
+}
+
 Function GetScriptRoot() {
  process {
      [string]$scriptPath = "."
@@ -482,9 +694,8 @@ Function GetScriptRoot() {
      if ($PSScriptRoot) {
        $scriptPath = $PSScriptRoot
      } else {
-       $scriptPath = (Get-Item -Path ".\").FullName  
+       $scriptPath = (Get-Item -Path ".\").FullName
      }
-
      return $scriptPath
  }
 }
@@ -524,8 +735,29 @@ Function StartProcess {
     Catch
     {
         Write-Log -Message $_.Exception.Message -severity 1 -component "Office 365 Update Anywhere"
-        WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError $_
+        WriteToLogFile -LNumber $_.InvocationInfo.ScriptLineNumber -FName $currentFileName -ActionError $_
     }
+}
+
+Function IsDotSourced() {
+  [CmdletBinding(SupportsShouldProcess=$true)]
+  param(
+    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [string]$InvocationLine = ""
+  )
+  $cmdLine = $InvocationLine.Trim()
+  Do {
+    $cmdLine = $cmdLine.Replace(" ", "")
+  } while($cmdLine.Contains(" "))
+
+  $dotSourced = $false
+  if ($cmdLine -match '^\.\\') {
+     $dotSourced = $false
+  } else {
+     $dotSourced = ($cmdLine -match '^\.')
+  }
+
+  return $dotSourced
 }
 
 function Get-CurrentLineNumber {
@@ -568,4 +800,10 @@ Function WriteToLogFile() {
     } catch [Exception]{
         Write-Host $_
     }
+}
+
+$dotSourced = IsDotSourced -InvocationLine $MyInvocation.Line
+
+if (!($dotSourced)) {
+   Remove-OfficeClickToRun -ComputerName $ComputerName -RemoveCTRXmlPath $RemoveCTRXmlPath -WaitForInstallToFinish $WaitForInstallToFinish -TargetFilePath $TargetFilePath -C2RProductsToRemove $C2RProductsToRemove -LogFilePath $LogFilePath
 }

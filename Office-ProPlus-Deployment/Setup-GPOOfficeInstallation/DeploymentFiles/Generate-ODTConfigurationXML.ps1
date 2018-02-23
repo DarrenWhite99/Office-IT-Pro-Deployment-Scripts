@@ -13,56 +13,68 @@ Add-Type -ErrorAction SilentlyContinue -TypeDefinition @"
 Function Generate-ODTConfigurationXml {
 <#
 .Synopsis
-Generates the Office Deployment Tool (ODT) Configuration XML from the current configuration of the target computer
+    Generates the Office Deployment Tool (ODT) Configuration XML from the current configuration of the target computer
+
 .DESCRIPTION
-This function will query the local or a remote computer and Generate the ODT configuration xml based on the local Office install
-and the local languages that are used on the local computer.  If Office isn't installed then it will utilize the configuration file
-specified in the 
+    This function will query the local or a remote computer and Generate the ODT configuration xml based on the local Office install
+    and the local languages that are used on the local computer.  If Office isn't installed then it will utilize a DefaultConfiguration file
+ 
 .NOTES   
-Name: Generate-ODTConfigurationXml
-Version: 1.0.3
-DateCreated: 2015-08-24
-DateUpdated: 2017-03-03
+    Name: Generate-ODTConfigurationXml
+    Version: 1.0.3
+    DateCreated: 2015-08-24
+    DateUpdated: 2017-03-03
+
 .LINK
-https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
+    https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
+
 .PARAMETER ComputerName
-The computer or list of computers from which to query 
+    The computer or list of computers from which to query
+
 .PARAMETER Languages
-Will expand the output to include all installed Office products
+    Will expand the output to include all installed Office products
+
 .PARAMETER TargetFilePath
-The path and file name of the file to save the Configuration xml
+    The path and file name of the file to save the Configuration xml
+
 .PARAMETER IncludeUpdatePathAsSourcePath
-If this parameter is set to $true then the SourcePath in the Configuration xml will be set to 
-the current UpdatePath on the local computer.  This assumes that the UpdatePath location has 
-the required files needed to run the installation 
+    If this parameter is set to $true then the SourcePath in the Configuration xml will be set to 
+    the current UpdatePath on the local computer.  This assumes that the UpdatePath location has 
+    the required files needed to run the installation.
+     
 .PARAMETER DefaultConfigurationXml
-This parameter sets the path to the Default Configuration XML file.  If Office is not installed on
-the computer that this script is run against it will default to this file in order to generate the 
-ODT Configuration XML.  The default file should have the products that you would want installed on 
-a workstation if Office isn't currently installed.  If this parameter is set to $NULL then it will
-not generate configuration XML if Office is not installed.  By default the script looks for a file
-called "DefaultConfiguration.xml" in the same directory as the script
+    This parameter sets the path to the Default Configuration XML file.  If Office is not installed on
+    the computer that this script is run against it will default to this file in order to generate the 
+    ODT Configuration XML.  The default file should have the products that you would want installed on 
+    a workstation if Office isn't currently installed.  If this parameter is set to $NULL then it will
+    not generate configuration XML if Office is not installed.  By default the script looks for a file
+    called "DefaultConfiguration.xml" in the same directory as the script.
+
 .EXAMPLE
-Generate-ODTConfigurationXml | fl
-Description:
-Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer
+    Generate-ODTConfigurationXml | fl
+
+    Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer
+
 .EXAMPLE
-Generate-ODTConfigurationXml  -ComputerName client01,client02 | fl
-Description:
-Will generate the Office Deployment Tool (ODT) configuration XML based on the configuration of the remote computers client01 and client02
+    Generate-ODTConfigurationXml  -ComputerName client01,client02 | fl
+
+    Will generate the Office Deployment Tool (ODT) configuration XML based on the configuration of the remote computers client01 and client02
+
 .EXAMPLE
-Generate-ODTConfigurationXml -Languages OSandUserLanguages
-Description:
-Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer and add the languages that the Operating System and the local users
-are currently using.
+    Generate-ODTConfigurationXml -Languages OSandUserLanguages
+    
+    Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer and add the languages that the Operating System and the local users
+    are currently using.
+
 .EXAMPLE
-Generate-ODTConfigurationXml -Languages OSLanguage
-Description:
-Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer and add the Current UI Culture language of the Operating System
+    Generate-ODTConfigurationXml -Languages OSLanguage
+    
+    Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer and add the Current UI Culture language of the Operating System
+
 .EXAMPLE
-Generate-ODTConfigurationXml -Languages CurrentOfficeLanguages
-Description:
-Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer and add only add the Languages currently in use by the current Office installation
+    Generate-ODTConfigurationXml -Languages CurrentOfficeLanguages
+    
+    Will generate the Office Deployment Tool (ODT) configuration XML based on the local computer and add only add the Languages currently in use by the current Office installation
 #>
 
 [CmdletBinding(SupportsShouldProcess=$true)]
@@ -487,7 +499,7 @@ process {
                             $configPath = Join-Path $key "Configuration"
                             $sharedLicense = $regProv.GetStringValue($HKLM, $configPath, "SharedComputerLicensing").sValue
                             if($sharedLicense -eq '1'){
-                               Set-ODTConfigProperties -SharedComputerLicensing "1" -ConfigDoc $ConfigFile
+                               Set-ODTConfigProperties -SharedComputerLicensing $true -ConfigDoc $ConfigFile
                             }
                         }
                     }
@@ -563,32 +575,40 @@ process {
 Function Get-OfficeVersion {
 <#
 .Synopsis
-Gets the Office Version installed on the computer
+    Gets the Office Version installed on the computer
+
 .DESCRIPTION
-This function will query the local or a remote computer and return the information about Office Products installed on the computer
+    This function will query the local or a remote computer and return the information about Office Products installed on the computer
+
 .NOTES   
-Name: Get-OfficeVersion
-Version: 1.0.5
-DateCreated: 2015-07-01
-DateUpdated: 2016-10-14
+    Name: Get-OfficeVersion
+    Version: 1.0.5
+    DateCreated: 2015-07-01
+    DateUpdated: 2016-10-14
+
 .LINK
-https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
+    https://github.com/OfficeDev/Office-IT-Pro-Deployment-Scripts
+
 .PARAMETER ComputerName
-The computer or list of computers from which to query 
+    The computer or list of computers from which to query 
+
 .PARAMETER ShowAllInstalledProducts
-Will expand the output to include all installed Office products
+    Will expand the output to include all installed Office products
+
 .EXAMPLE
-Get-OfficeVersion
-Description:
-Will return the locally installed Office product
+    Get-OfficeVersion
+
+    Will return the locally installed Office product
+
 .EXAMPLE
-Get-OfficeVersion -ComputerName client01,client02
-Description:
-Will return the installed Office product on the remote computers
+    Get-OfficeVersion -ComputerName client01,client02
+    
+    Will return the installed Office product on the remote computers
+
 .EXAMPLE
-Get-OfficeVersion | select *
-Description:
-Will return the locally installed Office product with all of the available properties
+    Get-OfficeVersion | select *
+   
+    Will return the locally installed Office product with all of the available properties
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
@@ -1868,129 +1888,253 @@ Function odtSetAdd{
 Function Set-ODTConfigProperties{
 <#
 .SYNOPSIS
-Modifies an existing configuration xml file to set property values
+    Modifies an existing configuration xml file to set property values
+
 .PARAMETER AutoActivate
-If AUTOACTIVATE is set to 1, the specified products will attempt to activate automatically. 
-If AUTOACTIVATE is not set, the user may see the Activation Wizard UI.
-You must not set AUTOACTIVATE for Office 365 Click-to-Run products. 
+    If AUTOACTIVATE is set to 1, the specified products will attempt to activate automatically. 
+    If AUTOACTIVATE is not set, the user may see the Activation Wizard UI.
+    You must not set AUTOACTIVATE for Office 365 Click-to-Run products. 
+
 .PARAMETER ForceAppShutDown
-An installation or removal action may be blocked if Office applications are running. 
-Normally, such cases would start a process killer UI. Administrators can set 
-FORCEAPPSHUTDOWN value to TRUE to prevent dependence on user interaction. When 
-FORCEAPPSHUTDOWN is set to TRUE, any applications that block the action will be shut 
-down. Data loss may occur. When FORCEAPPSHUTDOWN is set to FALSE (default), the 
-action may fail if Office applications are running.
+    An installation or removal action may be blocked if Office applications are running. 
+    Normally, such cases would start a process killer UI. Administrators can set 
+    FORCEAPPSHUTDOWN value to TRUE to prevent dependence on user interaction. When 
+    FORCEAPPSHUTDOWN is set to TRUE, any applications that block the action will be shut 
+    down. Data loss may occur. When FORCEAPPSHUTDOWN is set to FALSE (default), the 
+    action may fail if Office applications are running.
+
 .PARAMETER PackageGUID
-Optional. By default, all Office 2013 App-V packages created by using the Office 
-Deployment Tool share the same App-V Package ID. Administrators can use PACKAGEGUID 
-to specify a different Package ID. Also, PACKAGEGUID needs to be at least 25 
-characters in length and be separated into 5 sections, with each section separated by 
-a dash. The sections need to have the following number of characters: 8, 4, 4, 4, and 12. 
+    Optional. By default, all Office 2013 App-V packages created by using the Office 
+    Deployment Tool share the same App-V Package ID. Administrators can use PACKAGEGUID 
+    to specify a different Package ID. Also, PACKAGEGUID needs to be at least 25 
+    characters in length and be separated into 5 sections, with each section separated by 
+    a dash. The sections need to have the following number of characters: 8, 4, 4, 4, and 12. 
+
 .PARAMETER SharedComputerLicensing
-Optional. Set SharedComputerLicensing to 1 if you deploy Office 365 ProPlus to shared 
-computers by using Remote Desktop Services.
+    Optional. Set SharedComputerLicensing to 1 if you deploy Office 365 ProPlus to shared 
+    computers by using Remote Desktop Services.
+
 .PARAMETER TargetFilePath
-Full file path for the file to be modified and be output to.
+    Full file path for the file to be modified and be output to.
+
+.PARAMETER PinIconsToTaskbar
+    Optional. Set PinIconsToTaskbar to $true to pin icons to taskbar and $false to not.  Does not apply to Windows 10
+
 .Example
-Set-ODTConfigProperties -AutoActivate "1" -TargetFilePath "$env:Public/Documents/config.xml"
-Sets config to automatically activate the products
+    Set-ODTConfigProperties -AutoActivate "1" -TargetFilePath "$env:Public/Documents/config.xml"
+    
+    Sets config to automatically activate the products
+
 .Example
-Set-ODTConfigProperties -ForceAppShutDown "True" -PackageGUID "12345678-ABCD-1234-ABCD-1234567890AB" -TargetFilePath "$env:Public/Documents/config.xml"
-Sets the config so that apps are forced to shutdown during install and the package guid
-to "12345678-ABCD-1234-ABCD-1234567890AB"
+    Set-ODTConfigProperties -ForceAppShutDown "True" -PackageGUID "12345678-ABCD-1234-ABCD-1234567890AB" -TargetFilePath "$env:Public/Documents/config.xml"
+    
+    Sets the config so that apps are forced to shutdown during install and the package guid
+    to "12345678-ABCD-1234-ABCD-1234567890AB"
+
 .Notes
-Here is what the portion of configuration file looks like when modified by this function:
-<Configuration>
-  ...
-  <Property Name="AUTOACTIVATE" Value="1" />
-  <Property Name="FORCEAPPSHUTDOWN" Value="TRUE" />
-  <Property Name="PACKAGEGUID" Value="12345678-ABCD-1234-ABCD-1234567890AB" />
-  <Property Name="SharedComputerLicensing" Value="0" />
-  ...
-</Configuration>
+    Here is what the portion of configuration file looks like when modified by this function:
+
+    <Configuration>
+      ...
+      <Property Name="AUTOACTIVATE" Value="1" />
+      <Property Name="FORCEAPPSHUTDOWN" Value="TRUE" />
+      <Property Name="PACKAGEGUID" Value="12345678-ABCD-1234-ABCD-1234567890AB" />
+      <Property Name="SharedComputerLicensing" Value="0" />
+      <Property Name="PinIconsToTaskbar" Value="1" />
+      ...
+    </Configuration>
+
 #>
     [CmdletBinding()]
     Param(
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [System.XML.XMLDocument]$ConfigDoc = $NULL,
 
-       [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true)]
-       [System.XML.XMLDocument]$ConfigDoc = $NULL,
+        [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true, Position=0)]
+        [string] $ConfigurationXML = $NULL,
 
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string] $AutoActivate,
+        [System.Nullable[bool]] $AutoActivate,
 
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string] $ForceAppShutDown,
+        [System.Nullable[bool]] $ForceAppShutDown,
 
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string] $PackageGUID,
+        [string] $PackageGUID = $NULL,
 
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string] $SharedComputerLicensing,
+        [System.Nullable[bool]] $SharedComputerLicensing = $NULL,
 
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string] $TargetFilePath
+        [string] $TargetFilePath,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [System.Nullable[bool]] $PinIconsToTaskbar = $NULL,
+
+        [Parameter()]
+        [string]$LogFilePath
     )
 
     Process{
+        Set-Alias -name LINENUM -value Get-CurrentLineNumber
+        $currentFileName = Get-CurrentFileName
+
         #Load file
-        [System.XML.XMLDocument]$ConfigFile = $ConfigDoc
+        if($ConfigDoc){
+            [System.XML.XMLDocument]$ConfigFile = $ConfigDoc
+        } else {
+            [System.XML.XMLDocument]$ConfigFile = New-Object System.XML.XMLDocument
+        }
+
+        if($TargetFilePath){
+            $ConfigFile.Load($TargetFilePath) | Out-Null
+        } else {
+            if($ConfigurationXml){
+                $ConfigFile.LoadXml($ConfigurationXml) | Out-Null
+                $global:saveLastConfigFile = $NULL
+                $global:saveLastFilePath = $NULL
+            }
+        }
+
+        $global:saveLastConfigFile = $ConfigFile.OuterXml
 
         #Check for proper root element
         if($ConfigFile.Configuration -eq $null){
-            #write log
-            $lineNum = Get-CurrentLineNumber    
-            $filName = Get-CurrentFileName 
-            WriteToLogFile -LNumber $lineNum -FName $filName -ActionError "no configuration element"
             throw $NoConfigurationElement
         }
 
         #Set each property as desired
-        if(($AutoActivate)){
-            [System.XML.XMLElement]$AutoActivateElement = $ConfigFile.Configuration.Property | where { $_.Name -eq "AUTOACTIVATE" }
+        if($AutoActivate -ne $NULL){
+            [System.XML.XMLElement]$AutoActivateElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "AUTOACTIVATE" }
             if($AutoActivateElement -eq $null){
                 [System.XML.XMLElement]$AutoActivateElement=$ConfigFile.CreateElement("Property")
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "The Property element has been created" -LogFilePath $LogFilePath
             }
                 
             $ConfigFile.Configuration.appendChild($AutoActivateElement) | Out-Null
             $AutoActivateElement.SetAttribute("Name", "AUTOACTIVATE") | Out-Null
-            $AutoActivateElement.SetAttribute("Value", $AutoActivate) | Out-Null
+            $AutoActivateElement.SetAttribute("Value", $AutoActivate.ToString().ToUpper()) | Out-Null
+            WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Setting the AUTOACTIVATE element to $AutoActivate.ToString().ToUpper()" -LogFilePath $LogFilePath
+        } Else {
+            [System.XML.XMLElement]$AutoActivateElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "AUTOACTIVATE" }
+            if($AutoActivateElement -ne $null){
+               if ($PSBoundParameters.ContainsKey('AUTOACTIVATE')) {
+                   $ConfigFile.Configuration.removeChild($AutoActivateElement) | Out-Null
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Removed the AUTOACTIVATE element" -LogFilePath $LogFilePath
+               }
+            }
         }
 
-        if(($ForceAppShutDown)){
-            [System.XML.XMLElement]$ForceAppShutDownElement = $ConfigFile.Configuration.Property | where { $_.Name -eq "FORCEAPPSHUTDOWN" }
+        if($ForceAppShutDown -ne $NULL){
+            [System.XML.XMLElement]$ForceAppShutDownElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "FORCEAPPSHUTDOWN" }
             if($ForceAppShutDownElement -eq $null){
                 [System.XML.XMLElement]$ForceAppShutDownElement=$ConfigFile.CreateElement("Property")
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "The Property element has been created" -LogFilePath $LogFilePath
             }
                 
             $ConfigFile.Configuration.appendChild($ForceAppShutDownElement) | Out-Null
             $ForceAppShutDownElement.SetAttribute("Name", "FORCEAPPSHUTDOWN") | Out-Null
-            $ForceAppShutDownElement.SetAttribute("Value", $ForceAppShutDown) | Out-Null
+            $ForceAppShutDownElement.SetAttribute("Value", $ForceAppShutDown.ToString().ToUpper()) | Out-Null
+            WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Setting the FORCEAPPSHUTDOWN element to $ForceAppShutDown.ToString().ToUpper()" -LogFilePath $LogFilePath
+        } Else {
+            [System.XML.XMLElement]$ForceAppShutDownElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "FORCEAPPSHUTDOWN" }
+            if($ForceAppShutDownElement -ne $null){
+               if ($PSBoundParameters.ContainsKey('FORCEAPPSHUTDOWN')) {
+                   $ConfigFile.Configuration.removeChild($ForceAppShutDownElement) | Out-Null
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Removed the FORCEAPPSHUTDOWN element" -LogFilePath $LogFilePath
+               }
+            }
         }
 
-        if(($PackageGUID)){
-            [System.XML.XMLElement]$PackageGUIDElement = $ConfigFile.Configuration.Property | where { $_.Name -eq "PACKAGEGUID" }
+        if($PackageGUID){
+            [System.XML.XMLElement]$PackageGUIDElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "PACKAGEGUID" }
             if($PackageGUIDElement -eq $null){
                 [System.XML.XMLElement]$PackageGUIDElement=$ConfigFile.CreateElement("Property")
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "The Property element has been created" -LogFilePath $LogFilePath
             }
                 
             $ConfigFile.Configuration.appendChild($PackageGUIDElement) | Out-Null
             $PackageGUIDElement.SetAttribute("Name", "PACKAGEGUID") | Out-Null
             $PackageGUIDElement.SetAttribute("Value", $PackageGUID) | Out-Null
+            WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Setting the PACKAGEGUID element to $PackageGUID" -LogFilePath $LogFilePath
+        } Else {
+            [System.XML.XMLElement]$PackageGUIDElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "PACKAGEGUID" }
+            if($PackageGUIDElement -ne $null){
+               if ($PSBoundParameters.ContainsKey('PACKAGEGUID')) {
+                   $ConfigFile.Configuration.removeChild($PackageGUIDElement) | Out-Null
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Removed the PACKAGEGUID element" -LogFilePath $LogFilePath
+               }
+            }
         }
 
-        if(($SharedComputerLicensing)){
-            [System.XML.XMLElement]$SharedComputerLicensingElement = $ConfigFile.Configuration.Property | where { $_.Name -eq "SharedComputerLicensing" }
+        if($SharedComputerLicensing -eq $true){
+            [System.XML.XMLElement]$SharedComputerLicensingElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "SharedComputerLicensing" }
             if($SharedComputerLicensingElement -eq $null){
                 [System.XML.XMLElement]$SharedComputerLicensingElement=$ConfigFile.CreateElement("Property")
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "The Property element has been created" -LogFilePath $LogFilePath
             }
                 
             $ConfigFile.Configuration.appendChild($SharedComputerLicensingElement) | Out-Null
             $SharedComputerLicensingElement.SetAttribute("Name", "SharedComputerLicensing") | Out-Null
-            $SharedComputerLicensingElement.SetAttribute("Value", $SharedComputerLicensing) | Out-Null
+            $SharedComputerLicensingElement.SetAttribute("Value", "1") | Out-Null
+            WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Setting the SharedComputerLicensing element to $SharedComputerLicensing.ToString().ToUpper()" -LogFilePath $LogFilePath
+        } Else {
+            [System.XML.XMLElement]$SharedComputerLicensingElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "SharedComputerLicensing" }
+            if($SharedComputerLicensingElement -ne $null){
+               if ($PSBoundParameters.ContainsKey('SharedComputerLicensing')) {
+                   $ConfigFile.Configuration.removeChild($SharedComputerLicensingElement) | Out-Null
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Removed the SharedComputerLicensing element" -LogFilePath $LogFilePath
+               }
+            }
         }
 
+        if ($PinIconsToTaskbar -ne $NULL) {
+            [System.XML.XMLElement]$PinIconsToTaskbarElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "PinIconsToTaskbar" }
+            if($PinIconsToTaskbarElement -eq $null){
+                [System.XML.XMLElement]$PinIconsToTaskbarElement=$ConfigFile.CreateElement("Property")
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "The Property element has been created" -LogFilePath $LogFilePath
+            }
+                
+            $ConfigFile.Configuration.appendChild($PinIconsToTaskbarElement) | Out-Null
+            $PinIconsToTaskbarElement.SetAttribute("Name", "PinIconsToTaskbar") | Out-Null
+            $PinIconsToTaskbarElement.SetAttribute("Value", $PinIconsToTaskbar.ToString().ToUpper()) | Out-Null
+            WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Setting the PinIconsToTaskbar element to $PinIconsToTaskbar.ToString().ToUpper()" -LogFilePath $LogFilePath
+        } Else {
+            [System.XML.XMLElement]$PinIconsToTaskbarElement = $ConfigFile.Configuration.Property | Where { $_.Name -eq "PinIconsToTaskbar" }
+            if($PinIconsToTaskbarElement -ne $null){
+               if ($PSBoundParameters.ContainsKey('PinIconsToTaskbar')) {
+                   $ConfigFile.Configuration.removeChild($PinIconsToTaskbarElement) | Out-Null
+                   WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "Removed the PinIconsToTaskbar element" -LogFilePath $LogFilePath
+               }
+            }
+        }
+
+        if($TargetFilePath){
+            $ConfigFile.Save($TargetFilePath) | Out-Null
+            $global:saveLastFilePath = $TargetFilePath
+        
+            if (($PSCmdlet.MyInvocation.PipelineLength -eq 1) -or `
+                ($PSCmdlet.MyInvocation.PipelineLength -eq $PSCmdlet.MyInvocation.PipelinePosition)) {
+                Write-Host
+
+                Format-XML ([xml](cat $TargetFilePath)) -indent 4
+
+                Write-Host
+                Write-Host "The Office XML Configuration file has been saved to: $TargetFilePath"
+                WriteToLogFile -LNumber $(LINENUM) -FName $currentFileName -ActionError "The Office XML Configuration file has been saved to: $TargetFilePath" -LogFilePath $LogFilePath
+            } else {
+                $results = new-object PSObject[] 0;
+                $Result = New-Object –TypeName PSObject 
+                Add-Member -InputObject $Result -MemberType NoteProperty -Name "TargetFilePath" -Value $TargetFilePath
+                Add-Member -InputObject $Result -MemberType NoteProperty -Name "SharedComputerLicensing" -Value $SharedComputerLicensing
+                Add-Member -InputObject $Result -MemberType NoteProperty -Name "PackageGUID" -Value $PackageGUID
+                Add-Member -InputObject $Result -MemberType NoteProperty -Name "ForceAppShutDown" -Value $ForceAppShutDown
+                Add-Member -InputObject $Result -MemberType NoteProperty -Name "AutoActivate" -Value $AutoActivate
+                $Result
+            }
+        }     
     }
-} 
+}
 
 Function GetFilePath() {
     Param(
@@ -2050,57 +2194,49 @@ function Detect-Channel {
    )
 
 Process {
-    $currentFileName = Get-CurrentFileName
-    Set-Alias -name LINENUM -value Get-CurrentLineNumber 
+   $currentFileName = Get-CurrentFileName
+   Set-Alias -name LINENUM -value Get-CurrentLineNumber 
         
-    $channelXml = Get-ChannelXml
+   $channelXml = Get-ChannelXml
 
-    $UpdateChannel = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration -Name UpdateChannel -ErrorAction SilentlyContinue).UpdateChannel      
-    $GPOUpdatePath = (Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate -Name updatepath -ErrorAction SilentlyContinue).updatepath
-    $GPOUpdateBranch = (Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate -Name UpdateBranch -ErrorAction SilentlyContinue).UpdateBranch
-    $GPOUpdateChannel = (Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate -Name UpdateChannel -ErrorAction SilentlyContinue).UpdateChannel      
-    $UpdateUrl = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration -Name UpdateUrl -ErrorAction SilentlyContinue).UpdateUrl
-    $currentBaseUrl = Get-OfficeCDNUrl
+   $UpdateChannel = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration -Name UpdateChannel -ErrorAction SilentlyContinue).UpdateChannel      
+   $GPOUpdatePath = (Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate -Name updatepath -ErrorAction SilentlyContinue).updatepath
+   $GPOUpdateBranch = (Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate -Name UpdateBranch -ErrorAction SilentlyContinue).UpdateBranch
+   $GPOUpdateChannel = (Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate -Name UpdateChannel -ErrorAction SilentlyContinue).UpdateChannel      
+   $UpdateUrl = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration -Name UpdateUrl -ErrorAction SilentlyContinue).UpdateUrl
+   $currentBaseUrl = Get-OfficeCDNUrl
 
-    $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $currentBaseUrl -and $_.branch -notmatch 'Business' `
-                                                                                         -and $_.branch -notmatch 'Insiders' `
-                                                                                         -and $_.branch -notmatch 'Monthly' `
-                                                                                         -and $_.branch -notmatch 'Targeted' `
-                                                                                         -and $_.branch -notmatch 'Broad'}
+   $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $currentBaseUrl -and $_.branch -notmatch 'Business' }
       
-    if($UpdateUrl -ne $null -and $UpdateUrl -like '*officecdn.microsoft.com*'){
-        $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $UpdateUrl -and $_.branch -notmatch 'Business' `
-                                                                                        -and $_.branch -notmatch 'Insiders' `
-                                                                                        -and $_.branch -notmatch 'Monthly' `
-                                                                                        -and $_.branch -notmatch 'Targeted' `
-                                                                                        -and $_.branch -notmatch 'Broad'}  
-    }
+   if($UpdateUrl -ne $null -and $UpdateUrl -like '*officecdn.microsoft.com*'){
+       $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $UpdateUrl -and $_.branch -notmatch 'Business' }  
+   }
 
-    if($GPOUpdateChannel -ne $null){
-        $CurrentChannel = $channelXml.UpdateFiles.baseURL | ? {$_.branch.ToLower() -eq $GPOUpdateChannel.ToLower()}         
-    }
+   if($GPOUpdateChannel -ne $null){
+     $CurrentChannel = $channelXml.UpdateFiles.baseURL | ? {$_.branch.ToLower() -eq $GPOUpdateChannel.ToLower()}         
+   }
 
-    if($GPOUpdateBranch -ne $null){
-        $CurrentChannel = $channelXml.UpdateFiles.baseURL | ? {$_.branch.ToLower() -eq $GPOUpdateBranch.ToLower()}  
-    }
+   if($GPOUpdateBranch -ne $null){
+     $CurrentChannel = $channelXml.UpdateFiles.baseURL | ? {$_.branch.ToLower() -eq $GPOUpdateBranch.ToLower()}  
+   }
 
-    if($GPOUpdatePath -ne $null -and $GPOUpdatePath -like '*officecdn.microsoft.com*'){
-        $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $GPOUpdatePath -and $_.branch -notmatch 'Business' `
-                                                                                          -and $_.branch -notmatch 'Insiders' `
-                                                                                          -and $_.branch -notmatch 'Monthly' `
-                                                                                          -and $_.branch -notmatch 'Targeted' `
-                                                                                          -and $_.branch -notmatch 'Broad'}  
-    }
+   if($GPOUpdatePath -ne $null -and $GPOUpdatePath -like '*officecdn.microsoft.com*'){
+     $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $GPOUpdatePath -and $_.branch -notmatch 'Business' }  
+   }
 
-    if($UpdateChannel -ne $null -and $UpdateChannel -like '*officecdn.microsoft.com*'){
-        $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $UpdateChannel -and $_.branch -notmatch 'Business' `
-                                                                                          -and $_.branch -notmatch 'Insiders' `
-                                                                                          -and $_.branch -notmatch 'Monthly' `
-                                                                                          -and $_.branch -notmatch 'Targeted' `
-                                                                                          -and $_.branch -notmatch 'Broad'}  
-    }
+   if($UpdateChannel -ne $null -and $UpdateChannel -like '*officecdn.microsoft.com*'){
+     $CurrentChannel = $channelXml.UpdateFiles.baseURL | Where {$_.URL -eq $UpdateChannel -and $_.branch -notmatch 'Business' }  
+   }
 
-    return $CurrentChannel
+   if($CurrentChannel){
+      if($CurrentChannel.GetType().Name -eq "Object[]"){
+         $CurrentChannel = $CurrentChannel | ? {$_.branch -ne "FirstReleaseCurrent" -and $_.branch -ne "Current" `
+                                                                                    -and $_.branch -ne "FirstReleaseDeferred" `
+                                                                                    -and $_.branch -ne "Deferred"}
+      }
+   }
+
+   return $CurrentChannel
 }
 
 }
